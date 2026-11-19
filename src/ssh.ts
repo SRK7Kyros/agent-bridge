@@ -82,7 +82,16 @@ function psEncoded(script: string): string {
 /** Wrap a user command for the target shell, honouring an optional cwd. */
 export function wrapCommand(command: string, shell: ShellKind, cwd?: string): string {
   if (shell === "powershell") {
-    const body = cwd ? `Set-Location -LiteralPath ${psQuote(cwd)}; ${command}` : command;
+    // $ProgressPreference suppresses the CLIXML progress record PowerShell writes to
+    // stderr on the first module load of a session. It is cosmetic, but it lands in
+    // bridge_shell's stderr and reads like an error (measured from big-bro 2026-11-19).
+    const body = [
+      "$ProgressPreference='SilentlyContinue'",
+      cwd ? `Set-Location -LiteralPath ${psQuote(cwd)}` : "",
+      command,
+    ]
+      .filter(Boolean)
+      .join("; ");
     return `powershell -NoProfile -NonInteractive -EncodedCommand ${psEncoded(body)}`;
   }
   return cwd ? `cd ${shq(cwd)} && ${command}` : command;

@@ -59,7 +59,10 @@ describe("command wrapping", () => {
     const wrapped = wrapCommand("Get-Date", "powershell");
     expect(wrapped.startsWith("powershell -NoProfile -NonInteractive -EncodedCommand ")).toBe(true);
     const payload = wrapped.split(" ").pop()!;
-    expect(Buffer.from(payload, "base64").toString("utf16le")).toBe("Get-Date");
+    const script = Buffer.from(payload, "base64").toString("utf16le");
+    // The progress-record suppression comes first so it applies to the whole script.
+    expect(script.startsWith("$ProgressPreference='SilentlyContinue'; ")).toBe(true);
+    expect(script.endsWith("Get-Date")).toBe(true);
   });
 });
 

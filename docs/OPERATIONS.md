@@ -37,8 +37,14 @@ Each installer:
 2. links `skill/agent-bridge` into the host's skills directory,
 3. prints the MCP block to paste into `opencode.jsonc`.
 
-Then edit `~/.agent-bridge/config.json` for that host and restart OpenCode once —
-an MCP server is a startup read, so a running server does not see the new entry.
+Then edit `~/.agent-bridge/config.json` for that host. **Which half needs a restart
+is not the obvious half** (measured 2026-11-19 on both hosts):
+
+- the **MCP block needs no restart** — `mcp.servers` re-resolves per list/connect.
+  Adding it made the 16 tools appear in a live session, and `bridge_ping` answered
+  in-process; big-bro measured the same twice (2026-10-30, 2026-10-31).
+- the **skill link does need one** — `skills` paths are a startup read, so
+  `~/.opencode/skills/agent-bridge` stays invisible until the server is replaced.
 
 ## Keeping the two in sync
 
@@ -54,9 +60,10 @@ Config files are **not** in the repo (`config/config.json` is gitignored), becau
 they name paths and credentials that differ per host. Only the examples are
 tracked.
 
-After pulling, restart the host's OpenCode server if `src/` changed in a way that
-matters to a running MCP process — the server spawns the MCP process at startup,
-so a pulled change is live only for processes started after it.
+After pulling, a change under `src/` is live only in an MCP process spawned after
+it — the running child keeps the old code in memory. Replace that child (restart
+the server, or toggle the entry's `disabled` twice to force a respawn) rather than
+assuming a pull reached the live tools.
 
 ## Verifying an install
 
@@ -130,10 +137,15 @@ On a BSD/macOS peer those calls need different flags.
 
 ### The MCP tools do not appear
 
-An MCP server is a **startup read**. Adding `mcp.servers.agent-bridge` to
-`opencode.jsonc` does nothing until the server process is replaced. Confirm what
-is actually loaded with `GET /api/mcp` on the running server, not by reading the
-file.
+Check `GET /api/mcp` on the **running** server, not the file — and do not assume
+the entry needs a restart. `mcp.servers` re-resolves per list/connect (measured
+2026-11-19 on both hosts), so a correct block appears in a live session. If the
+tools are still missing, the cause is the block itself (bad path, `disabled:
+true`, a server that failed to spawn) — `/api/mcp` reports the failure and the
+stderr of the spawn, and the log line is the answer, not a restart.
+
+The **skill** is the opposite: `skills` paths are a startup read, so the symlink
+only becomes visible after the server process is replaced.
 
 ## Adding a third host
 

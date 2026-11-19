@@ -54,7 +54,9 @@ echo "  skill        : linked $SKILLS_DIR/agent-bridge"
 
 BUN_BIN="$(command -v bun || echo bun)"
 echo
-echo "Add this to opencode.json under mcp.servers, then restart the server:"
+echo "Add this to opencode.jsonc under mcp.servers (no restart needed - mcp.servers"
+echo "re-resolves per list/connect). The skill link is the opposite: skills paths are"
+echo "a startup read, so a new server process is needed before it loads:"
 cat <<JSON
     "agent-bridge": {
       "type": "local",

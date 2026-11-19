@@ -57,7 +57,9 @@ $bun = (Get-Command bun -ErrorAction SilentlyContinue).Source
 if (-not $bun) { $bun = "bun" }
 $mcp = Join-Path $repo "src\mcp.ts"
 Write-Host ""
-Write-Host "Add this to opencode.jsonc under mcp.servers, then restart the server:" -ForegroundColor Cyan
+Write-Host "Add this to opencode.jsonc under mcp.servers (no restart needed - mcp.servers" -ForegroundColor Cyan
+Write-Host "re-resolves per list/connect). The skill link is the opposite: skills paths are" -ForegroundColor Cyan
+Write-Host "a startup read, so a new server process is needed before it loads:" -ForegroundColor Cyan
 Write-Host @"
     "agent-bridge": {
       "type": "local",
