@@ -1,0 +1,23 @@
+{
+  "self": { "name": "big-bro", "agent": "sisyphus" },
+  "defaults": { "host": "kyros-home", "timeoutMs": 120000 },
+  "hosts": {
+    "kyros-home": {
+      "label": "Windows 11 desktop (DESKTOP-1EHVJ82)",
+      "ssh": {
+        "target": "Giulio@100.66.239.126",
+        "identityFile": "~/.ssh/id_ed25519_kyros-home",
+        "shell": "powershell",
+        "connectTimeoutSec": 15
+      },
+      "fs": { "enabled": false },
+      "agent": {
+        "enabled": true,
+        "baseUrl": "https://desktop-1ehvj82.tailbf1746.ts.net:8443",
+        "username": "opencode",
+        "password": "{file:/home/opc/.bridge/credentials/kyros-home.pw}",
+        "agent": "kyros-home"
+      }
+    }
+  }
+}

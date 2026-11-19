@@ -1,0 +1,27 @@
+{
+  "self": { "name": "kyros-home", "agent": "kyros-home" },
+  "defaults": { "host": "big-bro", "timeoutMs": 120000 },
+  "hosts": {
+    "big-bro": {
+      "label": "Oracle VPS (aarch64)",
+      "ssh": {
+        "target": "opc@100.73.218.41",
+        "identityFile": [
+          "C:/Windows/System32/config/systemprofile/.ssh/big-bro-key",
+          "~/.ssh/big-bro-key"
+        ],
+        "shell": "posix",
+        "connectTimeoutSec": 15
+      },
+      "fs": { "enabled": true, "root": "/home/opc" },
+      "agent": {
+        "enabled": true,
+        "baseUrl": "https://opencode.bigbro-itzamekyros.duckdns.org",
+        "username": "opencode",
+        "password": "{file:C:/Users/Giulio/.bridge/credentials/big-bro.pw}",
+        "agent": "sisyphus",
+        "directory": "/home/opc/everything/kyros/vibes"
+      }
+    }
+  }
+}

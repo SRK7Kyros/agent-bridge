@@ -1,0 +1,25 @@
+{
+  "name": "agent-bridge",
+  "version": "1.0.0",
+  "description": "Three-level bridge between two hosts: remote shell, remote filesystem, and bidirectional OpenCode agent sessions.",
+  "type": "module",
+  "license": "MIT",
+  "private": false,
+  "bin": {
+    "agent-bridge": "./src/cli.ts"
+  },
+  "scripts": {
+    "mcp": "bun run src/mcp.ts",
+    "cli": "bun run src/cli.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "bun": ">=1.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
