@@ -73,7 +73,7 @@ Run these in order; each one proves a different link.
 bun test                                  # 19 tests, no network
 bun run src/cli.ts hosts                  # config parses, levels visible
 bun run src/cli.ts ping big-bro           # ssh + agent liveness
-bun run src/cli.ts sh big-bro "uptime"    # level 1
+bun run src/cli.ts sh big-bro "uptime"    # level 1 — inspection only
 bun run src/cli.ts ls big-bro "."         # level 2
 bun run src/cli.ts sessions big-bro 3     # level 3 (read-only)
 ```

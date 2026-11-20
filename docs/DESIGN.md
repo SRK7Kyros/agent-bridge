@@ -12,6 +12,29 @@ everything funnels through, because then every trivial question pays agent-turn
 prices and every real question is expressed as a shell command with the peer's
 reasoning stripped out.
 
+## Ownership: a change belongs to the resident agent
+
+The levels are not only a cost ladder; one of the three is a boundary. Level 1 and
+level 3 can both run `systemctl restart`, and they are not the same act.
+
+A level-1 call executes the command with nobody on that host having decided
+anything: it bypasses the peer's `AGENTS.md`, its judgement about whether the
+action is safe on that machine right now, its knowledge of what else is running,
+and its own record of what it changed. A level-3 call runs the same command under
+all of those. So the routing rule is about ownership, not size:
+
+| Task | Who does it |
+|---|---|
+| Find out a fact about that host | the caller, level 1 |
+| Read or write bytes | the caller, level 2 |
+| Change anything there | **that host's agent**, level 3 |
+
+This is enforced by documentation and tool descriptions, not by the code — the
+bridge cannot tell a read-only command from a destructive one, and pretending
+otherwise would be a false boundary. The caller still supplies the knowledge (the
+measurement, the exact command, the constraint, how to prove it worked); the peer
+supplies the authority and the record.
+
 ## Why ssh for levels 1 and 2
 
 Considered and rejected:

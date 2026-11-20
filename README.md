@@ -4,7 +4,7 @@ Three levels of access from one machine to another, for agents and for humans.
 
 | Level | Tools | What it does |
 |---|---|---|
-| **1 — terminal** | `bridge_shell` | Runs a command in the peer's shell, like ssh |
+| **1 — terminal** | `bridge_shell` | Runs a command in the peer's shell, like ssh — **inspection only** |
 | **2 — filesystem** | `bridge_fs_*` | Reads and writes the peer's files, one-way by policy |
 | **3 — agent** | `bridge_agent_*` | Talks to the peer's OpenCode agent as a conversational peer |
 
@@ -35,6 +35,12 @@ Collapsing them into one surface forces every caller to overpay for the simple
 things. Keeping them separate lets an agent pick the cheapest level that actually
 answers the question. The routing rules live in
 [`skill/agent-bridge/SKILL.md`](skill/agent-bridge/SKILL.md).
+
+The one asymmetry that is **not** about cost: level 1 is an inspection channel.
+Anything that *changes* the peer — install, restart, delete, clean a cache, edit a
+config, apply a migration — goes to level 3, however small the command, because
+that host's agent owns its rules, its judgement about what is safe there right
+now, and the record of what changed. See "Who does the work" in the skill.
 
 ## Quick start
 

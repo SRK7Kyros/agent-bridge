@@ -98,7 +98,7 @@ export function buildTools(cfg: BridgeConfig): ToolDef[] {
     {
       name: "bridge_shell",
       description:
-        "LEVEL 1 — run a command in the peer's shell; returns stdout, stderr, exit code. Use for anything a local shell call could do: inspect, build, tail logs, run its CLI tools.",
+        "LEVEL 1 - INSPECT the peer host: run a command in its shell; returns stdout, stderr, exit code. Facts, logs, status, its own CLI. Do NOT use it to change that host (restart, install, delete, clean caches, edit config): the peer's agent owns that host's rules, judgement and record, so any change goes through LEVEL 3 even when it is one line.",
       inputSchema: {
         type: "object",
         properties: {
@@ -309,7 +309,7 @@ export function buildTools(cfg: BridgeConfig): ToolDef[] {
     {
       name: "bridge_agent_say",
       description:
-        "LEVEL 3 — send a prompt to a session on the peer. Returns at once; the peer's turn runs in the background, so follow with bridge_agent_wait.",
+        "LEVEL 3 - send a prompt to a session on the peer. This is also the level for every CHANGE on that host (install, restart, delete, clean up, edit config), however small, because it runs under the peer's own rules. Returns at once; the peer's turn runs in the background, so follow with bridge_agent_wait.",
       inputSchema: {
         type: "object",
         properties: {

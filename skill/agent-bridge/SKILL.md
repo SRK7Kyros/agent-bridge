@@ -24,7 +24,7 @@ a sentence.** Ask for an outcome and let the peer decide how to reach it.
 
 | Level | Tool family | Latency | Cost | What it gives you |
 |---|---|---|---|---|
-| 1 | `bridge_shell` | ~0.5–2 s | none | A command executed there, stdout/stderr/exit code |
+| 1 | `bridge_shell` | ~0.5–2 s | none | A fact a command produces there, stdout/stderr/exit code |
 | 2 | `bridge_fs_*` | ~0.5–2 s | none | That host's files: read, write, list, stat, move, delete |
 | 3 | `bridge_agent_*` | 10 s – 15 min | a full agent turn | A conversation with the peer agent |
 
@@ -36,13 +36,12 @@ as the task needs, and no further.**
 Use when the answer is a *fact a command produces* and nothing needs deciding:
 
 - `uptime`, `df -h`, `systemctl status x`, `tail -50 log`, `docker ps`
-- run the peer's own CLI (`opencode --version`, `git status`, `bun test`)
-- restart a sidecar, apply a migration, kick a build
+- run the peer's own CLI in a read-only way (`opencode --version`, `git status`)
 - anything you would type into an ssh session and read back
 
 Do **not** use it to read or write files — that is level 2, and level 2 does not
 mangle quoting or binary content. Do not use it to ask the peer a question —
-that is level 3.
+that is level 3. And do **not** use it to change that host — see the next section.
 
 ```json
 { "host": "big-bro", "command": "systemctl --user status opencode.service --no-pager" }
@@ -100,14 +99,50 @@ of it.
 **What not to use it for.** A single `df -h`. A file read. Anything where the
 answer is already a command — a level-3 round trip costs a full turn on the peer
 (seconds to minutes, and its tokens) to return what level 1 returns in one
-second. Reaching for level 3 on a trivial question is the most common misuse of
-this bridge.
+second. Reaching for level 3 on a trivial *question* is the most common misuse of
+this bridge. A trivial *change* is the opposite case: it is level 3 regardless of
+size, because the peer owns the host.
+
+## Who does the work: changes belong to the resident agent
+
+A level-1 call and a level-3 call can run the same `systemctl restart`. They are
+not the same act.
+
+When **you** run a command through level 1, you have reached into that host and
+acted on it. You bypassed its `AGENTS.md`, its judgement about whether the action
+is safe *on that machine right now*, its knowledge of what else is running, and
+its own record of what it changed. The command succeeds or fails with no one on
+that host having decided anything — and the next person to look at that box has
+no idea you were there.
+
+So the division is not "how many commands" but **who owns the host**:
+
+| The task | Who does it |
+|---|---|
+| Find out a fact about that host | **You**, level 1 |
+| Read or write bytes | **You**, level 2 |
+| Change anything there: install, restart, delete, clean a cache, edit config, apply a migration, kick a build | **That host's agent**, level 3 |
+
+This holds even when the change is trivial and you already know the exact
+command. *Especially* then — a one-line change is the cheapest thing to delegate
+and the easiest thing to do without a trace. You still supply the knowledge: the
+measurement, the exact command, the constraint, and how to prove it worked. The
+peer supplies the authority and the record.
+
+Two consequences worth stating:
+
+- **Level 1 stops being a shortcut for level 3.** It is an *inspection* channel.
+  If a level-1 call is about to change state, that is the signal to climb.
+- **Delegation is not abdication.** "Clear some cache" with no numbers is a bad
+  prompt; "the disk is 99% full, here is what is large, do not touch this
+  directory, report what you reclaimed" is the same request done right.
 
 ## Choosing, in one line
 
 > Can I state the answer as a command? **Level 1.**
 > Is it bytes? **Level 2.**
 > Does it need *them* to decide, use their tools, or act under their rules? **Level 3.**
+> Does it change anything on their host? **Level 3** — always, however small.
 
 When two levels would both work, the cheaper one wins; when the cheaper one
 starts growing conditionals ("if that fails, then…"), that is the signal to
@@ -169,6 +204,8 @@ you report a change on the peer, say which end you measured from, and when.
 ## Anti-patterns
 
 - **Level 3 for a one-liner.** A whole agent turn to run `uptime`.
+- **Level 1 for a change.** Reaching in to restart, install, delete or clean up.
+  That host's agent owns those acts, even when the command is one line.
 - **Level 1 for file content.** `cat` through a shell instead of `bridge_fs_read`.
 - **Treating the peer as a subagent.** Its context is not yours; do not assume it
   knows what you know.
